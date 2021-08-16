@@ -27,7 +27,8 @@ class Collection:
             'pageSize': 6,
             "pageNumber": 1
         }
-        res = self.session.post(queryUrl, data=json.dumps(params), headers=headers, verify=False).json()
+        res = self.session.post(queryUrl, data=json.dumps(params), headers=headers, verify=False)
+        res = res.json()
         if len(res['datas']['rows']) < 1:
             raise Exception('查询表单失败，请确认你是信息收集并且当前有收集任务。确定请联系开发者')
         self.collectWid = res['datas']['rows'][0]['wid']

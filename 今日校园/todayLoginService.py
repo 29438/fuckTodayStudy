@@ -8,7 +8,6 @@ from login.casLogin import casLogin
 from login.iapLogin import iapLogin
 from login.henuLogin import henuLogin
 from login.whpuLogin import whpuLogin
-from login.currencyLogin import currencyLogin
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
@@ -56,20 +55,14 @@ class TodayLoginService:
                         status_code = newAmpUrl.status_code
                         if 'Location' in newAmpUrl.headers:
                             ampUrl = newAmpUrl.headers['Location']
-                    parse = urlparse(ampUrl)
-                    host = parse.netloc
                     self.login_url = ampUrl
                     self.login_host = re.findall('\w{4,5}\:\/\/.*?\/', self.login_url)[0]
                 ampUrl2 = data['ampUrl2']
                 if 'campusphere' in ampUrl2 or 'cpdaily' in ampUrl2:
                     self.host = re.findall('\w{4,5}\:\/\/.*?\/', ampUrl2)[0]
-                    parse = urlparse(ampUrl2)
-                    host = parse.netloc
-                    res = self.session.get(parse.scheme + '://' + host)
-                    parse = urlparse(res.url)
-                    self.login_url = idsUrl + '/login?service=' + parse.scheme + r"%3A%2F%2F" + host + r'%2Fportal%2Flogin'
-                    self.login_host = re.findall('\w{4,5}\:\/\/.*?\/', self.login_url)[0]
-
+                    ampUrl2 = self.session.get(ampUrl2, verify=False).url
+                    self.login_url = ampUrl2
+                    self.login_host = re.findall(r'\w{4,5}\:\/\/.*?\/', self.login_url)[0]
                 break
 
     # 通过登陆url判断采用哪种登陆方式

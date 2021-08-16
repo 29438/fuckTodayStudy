@@ -63,8 +63,15 @@ class casLogin:
         # 如果等于302强制跳转，代表登陆成功
         if data.status_code == 302:
             jump_url = data.headers['Location']
-            self.session.post(jump_url, verify=False)
-            return self.session.cookies
+            res = self.session.post(jump_url, verify=False)
+            if res.status_code == 200:
+                return self.session.cookies
+            else:
+                res = self.session.get(re.findall(r'\w{4,5}\:\/\/.*?\/', self.login_url)[0], verify=False)
+                if res.status_code ==200:
+                    return self.session.cookies
+                else:
+                    raise Exception('登录失败，请反馈BUG')
         elif data.status_code == 200:
             data = data.text
             soup = BeautifulSoup(data, 'lxml')
