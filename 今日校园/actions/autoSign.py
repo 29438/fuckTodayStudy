@@ -96,6 +96,8 @@ class AutoSign:
             userItems = self.userInfo['forms']
             extraFieldItemValues = []
             for i in range(len(extraFields)):
+                if i >= len(userItems):
+                    raise Exception("您的config表单中form字段不够，请检查")
                 userItem = userItems[i]['form']
                 extraField = extraFields[i]
                 if self.userInfo['checkTitle'] == 1:
@@ -104,20 +106,30 @@ class AutoSign:
                             f'\r\n第{i + 1}个配置出错了\r\n您的标题为：{userItem["title"]}\r\n系统的标题为：{extraField["title"]}')
                 extraFieldItems = extraField['extraFieldItems']
                 flag = False
+                data = 'NULL'
                 for extraFieldItem in extraFieldItems:
                     if extraFieldItem['isSelected']:
                         data = extraFieldItem['content']
                     # print(extraFieldItem)
                     if extraFieldItem['content'] == userItem['value']:
-                        flag =True
-                        extraFieldItemValue = {'extraFieldItemValue': userItem['value'],
-                                               'extraFieldItemWid': extraFieldItem['wid']}
-                    # 其他 额外的文本
-                    if extraFieldItem['isOtherItems'] == 1:
-                        flag = True
-                        extraFieldItemValue = {'extraFieldItemValue': userItem['value'],
-                                               'extraFieldItemWid': extraFieldItem['wid']}
-                    extraFieldItemValues.append(extraFieldItemValue)
+                        if extraFieldItem['isOtherItems'] == 1:
+                            if ('extra' in userItem):
+                                flag = True
+                                extraFieldItemValue = {
+                                    'extraFieldItemValue': userItem['extra'],
+                                    'extraFieldItemWid': extraFieldItem['wid']
+                                }
+                                extraFieldItemValues.append(
+                                    extraFieldItemValue)
+                            else:
+                                raise Exception(f'\r\n第{i + 1}个配置出错了\r\n表单未找到你设置的值：{userItem["value"]},\r\n该选项需要extra字段')
+                        else:
+                            flag = True
+                            extraFieldItemValue = {
+                                'extraFieldItemValue': userItem['value'],
+                                'extraFieldItemWid': extraFieldItem['wid']
+                            }
+                            extraFieldItemValues.append(extraFieldItemValue)
                 if not flag:
                     raise Exception(f'\r\n第{ i + 1 }个配置出错了\r\n表单未找到你设置的值：{userItem["value"]}\r\n，你上次系统选的值为：{ data }')
             self.form['extraFieldItems'] = extraFieldItemValues
